@@ -66,9 +66,9 @@ def start(path, config, current_client):
     if current_client != 'HPE':
         yoloDetect(filename_id)
 
-    #excel(path, current_client)
+    excel(path, current_client)
 
-    #make_finalSheet(current_client, filename_id)
+    make_finalSheet(current_client, filename_id)
 
     print('Finish!', flush=True)
 
@@ -452,6 +452,9 @@ def make_finalSheet(current_client, filename_id):
                             ws_destino.append(row)
 
             arquivo_excel_path = f'Excel/planilha_final{filename_id}.xlsx'
+
+            print(f'ExcelFinal {arquivo_excel_path}', flush=True)
+
             wb_destino.save(arquivo_excel_path)
             df_final = pd.read_excel(arquivo_excel_path, sheet_name='DADOS')
             df_final.at[3, 'X'] = c
@@ -484,6 +487,9 @@ def make_finalSheet(current_client, filename_id):
                             ws_destino.append(row)
 
             arquivo_excel_path = f'Excel/planilha_final{filename_id}.xlsx'
+
+            print(f'ExcelFinal {arquivo_excel_path}', flush=True)
+
             wb_destino.save(arquivo_excel_path)
 
     warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl.styles.stylesheet")

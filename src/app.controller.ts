@@ -5,14 +5,14 @@ import {
   Post,
   UploadedFile,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { exec, spawn } from 'child_process';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import { Response } from 'express';
 import * as fs from 'fs';
-
 
 @Controller('upload')
 export class AppController {
@@ -31,72 +31,71 @@ export class AppController {
       }),
     }),
   )
-  uploadFile(@UploadedFile() file: any) {
-    console.log(file); // Informações do arquivo (nome, path, etc.)
-    return { message: 'File uploaded successfully', file };
-  }
-
-  @Get('start-python')
-  startPythonScript() {
-    console.log('iniciou');
+  uploadFile(
+    @UploadedFile() file: any,
+    @Res() res: Response,
+    @Query() query: any,
+  ) {
+    let nomeDoArquivo: string;
     return new Promise((resolve, reject) => {
-      console.log('1');
-      const pythonProcess = spawn('./Project_20240710/python.exe', [
+      const pythonProcess = spawn('./enviroment/python.exe', [
         './python_backend/main.py',
-        '../uploads/output61714129322.pdf',
-        'HPE',
+        `../uploads/${file.filename}`,
+        query.type,
       ]);
-      console.log('2');
+
+      // Obtendo o caminho atual
+      const currentDirectory = __dirname; // Caminho atual do diretório
+      console.log('Caminho atual:', currentDirectory);
+
       pythonProcess.stdout.on('data', (data) => {
         console.log(`Progress: ${data}`);
-      });
-      console.log('3');
-      pythonProcess.stderr.on('data', (data) => {
-        console.error(`Error: ${data}`);
-        reject(`Error: ${data}`);
-      });
-      console.log('4');
-      pythonProcess.on('close', (code) => {
-        if (code !== 0) {
-          reject(`Python script exited with code ${code}`);
-        } else {
-          resolve({
-            message: 'Python script finished successfully',
-          });
+        if (data.toString().startsWith('ExcelFinal')) {
+          const parts = data.toString().split(' ');
+          if (parts.length > 1) {
+            nomeDoArquivo = parts[1];
+            nomeDoArquivo = parts[1].replace(/[\r\n]+$/, '');
+          } else {
+            console.log('Formato inesperado da string:', data);
+          }
+        }
+
+        if (data.toString().startsWith('Fini')) {
+          const filePath: string = join(
+            currentDirectory,
+            `../python_backend/${nomeDoArquivo}`,
+          );
+
+          res.setHeader('Access-Control-Allow-Origin', '*');
+
+          if (true) {
+            console.log('b');
+            return res.download(filePath, (err) => {
+              if (err) {
+                console.error('Error downloading file:', err);
+                res.status(500).send('Error downloading file');
+              } else {
+                fs.unlink(filePath, (err) => {
+                  if (err) {
+                    console.error('Error deleting file:', err);
+                  } else {
+                    console.log('File deleted successfully');
+                  }
+                });
+              }
+            });
+          } else {
+            res.status(404).send('File not found');
+          }
         }
       });
-      console.log('5');
 
+      pythonProcess.stderr.on('data', (data) => {
+        // console.error(`Error: ${data}`);
+        // reject(`Error: ${data}`);
+      });
     });
   }
-
   @Get('download-excel')
-  downloadExcel(@Res() res: Response) {
-    const filePath: string = './python_backend/Excel/planilha_finaloutput6174129322.xlsx';
-
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Permite CORS
-
-    if (fs.existsSync(filePath)) {
-      res.download(filePath, (err) => {
-        if (err) {
-          console.error('Error downloading file:', err);
-          res.status(500).send('Error downloading file');
-        } else {
-          fs.unlink(filePath, (err) => {
-            if (err) {
-              console.error('Error deleting file:', err);
-            } else {
-              console.log('File deleted successfully');
-            }
-          });
-        }
-      });
-    } else {
-      res.status(404).send('File not found');
-    }
-  }
-  
-
+  downloadExcel(@Res() res: Response) {}
 }
-
-
