@@ -13,9 +13,12 @@ import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { Response } from 'express';
 import * as fs from 'fs';
+import { EventsGateway } from './websocket/events.gateway';
 
 @Controller('upload')
 export class AppController {
+  constructor(private readonly eventsGateway: EventsGateway) {}
+
   @Post()
   @UseInterceptors(
     FileInterceptor('file', {
@@ -48,8 +51,15 @@ export class AppController {
       console.log('Caminho atual:', currentDirectory);
 
       pythonProcess.stdout.on('data', (data) => {
+        const progress = parseInt(data.toString()); // Assuming the progress is sent as a number
+        if (!isNaN(progress)) {
+          this.eventsGateway.progress(progress); // Emit the progress event
+        }
+
         console.log(`Progress: ${data}`);
         if (data.toString().startsWith('ExcelFinal')) {
+          console.log(data);
+
           const parts = data.toString().split(' ');
           if (parts.length > 1) {
             nomeDoArquivo = parts[1];
@@ -59,7 +69,8 @@ export class AppController {
           }
         }
 
-        if (data.toString().startsWith('Fini')) {
+        if (data.toString().startsWith('8')) {
+          console.log(nomeDoArquivo);
           const filePath: string = join(
             currentDirectory,
             `../python_backend/${nomeDoArquivo}`,
@@ -95,6 +106,7 @@ export class AppController {
       });
     });
   }
+
   @Get('download-excel')
   downloadExcel(@Res() res: Response) {}
 }

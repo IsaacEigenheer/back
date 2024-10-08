@@ -39,7 +39,7 @@ def start(path, config, current_client):
     global pdf_path
     global filename_id
 
-    print('Processo Iniciado', flush=True)
+    print('1', flush=True)
 
     pdf_path = path
     filename_id = (Path(pdf_path)).stem
@@ -70,6 +70,8 @@ def start(path, config, current_client):
 
     make_finalSheet(current_client, filename_id)
 
+    print('7', flush=True)
+
     if os.path.exists('cropped_images'):
         for file in os.listdir('cropped_images'):
             if filename_id in file:
@@ -98,7 +100,7 @@ def start(path, config, current_client):
                 os.remove(os.path.join('images', file))
 
 
-    print('Finish!', flush=True)
+    print('8', flush=True)
 
 
 def processar_imagem(image_path, config, current_client):
@@ -182,7 +184,7 @@ def detect_lines_and_save(image, image_name, h, w, config, current_client):
         t += 1
 
     output_path = os.path.join(fr"processed_images/processedimage{filename_id}.png")
-    print('Imagem Processada', flush=True)
+    print('2', flush=True)
     cv2.imwrite(output_path, image)
 
 @njit
@@ -310,7 +312,7 @@ def yoloDetect(filename_id):
             crop_img = image[y1:y2, x1:x2]
             cv2.imwrite(f'crops2/{j}{filename_id}.png', crop_img)
             j += 1
-    print('Tabelas Identificadas', flush=True)
+    print('3', flush=True)
 
 def move_mouse_smoothly(driver, element):
     action = ActionChains(driver)
@@ -329,7 +331,7 @@ def execute_action_with_retry(driver, action_func, max_attempts=2, *args):
 
 
 def excel(path, current_client):
-    print('Iniciando Conversão Para Excel', flush=True)
+    print('4', flush=True)
     caminhos_arquivos = []
 
     if current_client != 'HPE':
@@ -423,7 +425,7 @@ def excel(path, current_client):
     convert_to_excel()
 
 def make_finalSheet(current_client, filename_id):
-    print('Fazendo Planilha Final', flush=True)
+    print('5', flush=True)
     def convert(filename_id):
         caminho_pasta_excel = 'Excel'
         excel_final = 'planilha_final.xlsx'
@@ -487,6 +489,8 @@ def make_finalSheet(current_client, filename_id):
             df_final = pd.read_excel(arquivo_excel_path, sheet_name='DADOS')
             df_final.at[3, 'X'] = c
             df_final.at[18, 'X'] = p
+
+            print('6', flush=True)
 
     def generic_convert(filename_id):
         caminho_pasta_excel = 'Excel'
