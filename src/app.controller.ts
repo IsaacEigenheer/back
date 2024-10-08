@@ -44,7 +44,6 @@ export class AppController {
         query.type,
       ]);
 
-      // Obtendo o caminho atual
       const currentDirectory = __dirname; // Caminho atual do diretório
       console.log('Caminho atual:', currentDirectory);
 
