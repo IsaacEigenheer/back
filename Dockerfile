@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-# Instala as dependências do sistema e o 
+# Instala as dependências do sistema e o Node.js na versão desejada
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg2 \
